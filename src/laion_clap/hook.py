@@ -6,11 +6,12 @@ Authors (equal contributions): Ke Chen, Yusong Wu, Tianyu Zhang, Yuchen Hui
 Support: LAION
 """
 import os
+import logging
 import torch
 import librosa
 from clap_module import create_model
-from training.data import get_audio_features
-from training.data import int16_to_float32, float32_to_int16
+from .training.data import get_audio_features
+from .training.data import int16_to_float32, float32_to_int16
 
 from transformers import RobertaTokenizer
 import wget
@@ -95,27 +96,27 @@ class CLAP_Module(torch.nn.Module):
             '630k-audioset-fusion-best.pt'
         ]
         if ckpt is not None:
-            print(f'Load the specified checkpoint {ckpt} from users.')
+            logging.info(f'Load the specified checkpoint {ckpt} from users.')
         else:
-            print(f'Load our best checkpoint in the paper.')
+            logging.info(f'Load our best checkpoint in the paper.')
             if model_id == -1:
                 model_id = 3 if self.enable_fusion else 1
             package_dir = os.path.dirname(os.path.realpath(__file__))
             weight_file_name = download_names[model_id]
             ckpt = os.path.join(package_dir, weight_file_name)
             if os.path.exists(ckpt):
-                print(f'The checkpoint is already downloaded')
+                logging.info(f'The checkpoint is already downloaded')
             else:
-                print('Downloading laion_clap weight files...')
+                logging.info('Downloading laion_clap weight files...')
                 ckpt = wget.download(download_link + weight_file_name, os.path.dirname(ckpt))
-                print('Download completed!')
-        print('Load Checkpoint...')
+                logging.info('Download completed!')
+        logging.info('Load Checkpoint...')
         ckpt = load_state_dict(ckpt, skip_params=True)
         self.model.load_state_dict(ckpt)
         if verbose:
             param_names = [n for n, p in self.model.named_parameters()]
             for n in param_names:
-                print(n, "\t", "Loaded" if n in ckpt else "Unloaded")
+                logging.info(n, "\t", "Loaded" if n in ckpt else "Unloaded")
     
     def get_audio_embedding_from_filelist(self, x, use_tensor=False):
         """get audio embeddings from the audio file list
