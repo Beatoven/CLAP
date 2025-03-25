@@ -13,4 +13,3 @@ pandas
 h5py
 tqdm
 regex
-transformers<=4.30.2
